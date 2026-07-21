@@ -1,0 +1,22 @@
+# Routes / to the frontend and /api to the api service (same origin, no CORS).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: log-analyzer
+  namespace: log-analyzer
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "60m"   # exceed the 50MB upload cap
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: log-analyzer.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service: { name: api, port: { number: 8000 } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: frontend, port: { number: 80 } }

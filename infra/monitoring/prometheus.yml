@@ -1,0 +1,12 @@
+# Prometheus scrape config. In compose: `prometheus --config.file=/etc/prometheus/prometheus.yml`
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api:8000"]
+
+  # In Kubernetes, replace the static target with kubernetes_sd_configs and rely
+  # on the prometheus.io/scrape annotations already set on the api Deployment.

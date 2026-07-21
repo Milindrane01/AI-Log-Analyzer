@@ -1,0 +1,28 @@
+# Alerting rules (load into Prometheus or Alertmanager).
+groups:
+  - name: log-analyzer
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+            / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "5xx error rate above 5% for 5 minutes"
+
+      - alert: SlowRequests
+        expr: |
+          sum(rate(http_request_duration_seconds_sum[5m]))
+            / sum(rate(http_request_duration_seconds_count[5m])) > 0.3
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Average request latency above 300ms"
+
+      - alert: ApiDown
+        expr: up{job="api"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "API target is down"

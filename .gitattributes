@@ -1,0 +1,5 @@
+# Keep GitHub's language stats focused on real source
+docs/**            linguist-documentation
+*.md               linguist-documentation
+infra/**           linguist-vendored
+frontend/package-lock.json linguist-generated

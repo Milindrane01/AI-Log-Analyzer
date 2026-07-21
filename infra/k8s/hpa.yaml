@@ -1,0 +1,41 @@
+# Autoscaling. API scales on CPU (request-bound). Workers ideally scale on
+# queue depth — that needs a custom/external metric (KEDA + Redis), noted below;
+# CPU is the portable default that works on any cluster out of the box.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+  namespace: log-analyzer
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: worker
+  namespace: log-analyzer
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: worker
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 75 }
+  # PRODUCTION NOTE: workers should scale on Celery queue depth (KEDA ScaledObject
+  # against Redis list length), not CPU — CPU lags the real signal. Documented in
+  # module-10; CPU used here so the manifest works on a vanilla cluster.

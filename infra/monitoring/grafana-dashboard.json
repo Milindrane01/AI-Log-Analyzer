@@ -1,0 +1,42 @@
+{
+  "title": "AI Log Analyzer — Service Overview",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Request rate (req/s) by path",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "sum by (path) (rate(http_requests_total[1m]))", "legendFormat": "{{path}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx error ratio",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+          "legendFormat": "error ratio"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Avg latency (s) by path",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum by (path) (rate(http_request_duration_seconds_sum[5m])) / sum by (path) (rate(http_request_duration_seconds_count[5m]))",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total requests",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [{ "expr": "sum(http_requests_total)" }]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Non-secret configuration. Secrets live in a Secret (secret.example.yaml).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: log-analyzer
+data:
+  APP_ENVIRONMENT: "production"
+  APP_LOG_JSON: "true"
+  APP_LOG_LEVEL: "INFO"
+  APP_REDIS_URL: "redis://redis:6379/0"
+  APP_QDRANT_URL: "http://qdrant:6333"
+  APP_UPLOAD_DIR: "/srv/uploads"
+  APP_EMBEDDING_BACKEND: "sentence-transformers"
