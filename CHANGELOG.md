@@ -11,6 +11,11 @@ versioning: [SemVer](https://semver.org/) once the API is public (0.x until then
 - Readiness probe now pings the vector store when similarity search is configured
 - `docs/planning/05-backlog.md` — consolidated pending/refinement backlog
 
+- Enterprise handover documentation set: `docs/README.md` + 18 numbered docs (01–18) covering
+  overview, architecture, LLD, request flow, API, database, AI, DevOps, security, performance,
+  testing, operations, troubleshooting, developer/user guides, interview guide, KT, and FAQ
+- Six Mermaid diagram sources in `docs/diagrams/` (architecture, sequence, erd, ai_pipeline,
+  deployment, ci_cd), embedded inline across the docs
 - Recruiter-grade README: badges, highlights, inline Mermaid architecture diagram, screenshot slot
 - `docs/portfolio/related-work.md` mapping the project to published RCA/LLM-log research
 - `.gitattributes` so GitHub language stats reflect real source

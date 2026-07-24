@@ -1,0 +1,107 @@
+%% Entity-relationship diagram — derived from app/models/*.py (migrations 001–006)
+erDiagram
+    users ||--o{ log_files : owns
+    users ||--o{ analyses : owns
+    users ||--o{ audit_logs : "may reference"
+    log_files ||--o{ analyses : "analyzed by"
+    analyses ||--o{ error_groups : produces
+    error_groups ||--o| group_insights : "enriched by"
+    log_files ||--o{ conversations : "chatted over"
+    conversations ||--o{ messages : contains
+    analyses ||--o| incident_reports : "reported by"
+    analyses ||--o{ investigations : "investigated by"
+    investigations ||--o{ investigation_steps : traces
+
+    users {
+        string id PK "uuid"
+        string email UK
+        string hashed_password
+        bool is_active
+        datetime created_at
+        datetime updated_at
+    }
+    audit_logs {
+        string id PK
+        string user_id "nullable"
+        string action
+        string outcome "success|failure"
+        json context
+    }
+    log_files {
+        string id PK
+        string user_id FK
+        string filename
+        string storage_path
+        int size_bytes
+        string content_hash "sha256"
+        string source "upload|paste"
+        string detected_format
+    }
+    analyses {
+        string id PK
+        string user_id FK
+        string log_file_id FK
+        string status "pending|running|completed|failed"
+        text error_message
+        int total_lines
+        int error_lines
+        int group_count
+    }
+    error_groups {
+        string id PK
+        string analysis_id FK
+        string fingerprint "sha256"
+        text template
+        string level
+        string severity
+        int count
+        json sample_lines
+    }
+    group_insights {
+        string id PK
+        string group_id FK,UK
+        string user_id
+        string fingerprint "cache key"
+        json payload "InsightResult"
+        string model
+        int prompt_tokens
+        int completion_tokens
+        bool from_cache
+    }
+    conversations {
+        string id PK
+        string user_id FK
+        string log_file_id FK
+    }
+    messages {
+        string id PK
+        string conversation_id FK
+        string role "user|assistant"
+        text content
+        json citations
+    }
+    incident_reports {
+        string id PK
+        string analysis_id FK,UK
+        string user_id
+        string title
+        text markdown
+    }
+    investigations {
+        string id PK
+        string analysis_id FK
+        string user_id
+        string status
+        text conclusion
+        float confidence
+        bool verified
+        int total_steps
+    }
+    investigation_steps {
+        string id PK
+        string investigation_id FK
+        int seq
+        string agent "planner|investigator|verifier"
+        string action
+        json content
+    }

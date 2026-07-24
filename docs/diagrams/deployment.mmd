@@ -1,0 +1,34 @@
+%% Deployment topology — docker-compose.yml + infra/k8s/*
+flowchart TB
+    subgraph K8s["Kubernetes namespace: log-analyzer"]
+        ING["Ingress (nginx)<br/>/ → frontend, /api → api"]
+        subgraph appTier["Application tier"]
+            FE["frontend Deployment<br/>(nginx, static SPA)"]
+            APID["api Deployment (HPA 2–8, CPU 70%)<br/>liveness=/health, readiness=/health/ready"]
+            WRK["worker Deployment (HPA 2–10)<br/>celery worker"]
+        end
+        subgraph dataTier["Data tier"]
+            PGP["postgres"]
+            RDP["redis"]
+            QDP["qdrant"]
+        end
+        CM["ConfigMap: app-config"]
+        SEC["Secret: app-secrets"]
+    end
+
+    ING --> FE
+    ING --> APID
+    APID --> PGP
+    APID --> RDP
+    APID --> QDP
+    WRK --> PGP
+    WRK --> RDP
+    WRK --> QDP
+    CM -.envFrom.-> APID
+    SEC -.envFrom.-> APID
+    CM -.envFrom.-> WRK
+    SEC -.envFrom.-> WRK
+
+    subgraph Compose["Local: docker-compose.yml"]
+        C["api · worker · frontend · postgres · redis · qdrant · prometheus · grafana"]
+    end
