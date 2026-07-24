@@ -1,4 +1,4 @@
-// Typed API client with automatic refresh-token rotation.
+﻿// Typed API client with automatic refresh-token rotation.
 //
 // Token strategy: access token lives in MEMORY only (XSS can't read what isn't
 // stored); the refresh token sits in localStorage as a deliberate, documented
