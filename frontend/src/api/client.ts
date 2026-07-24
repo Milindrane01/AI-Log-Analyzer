@@ -7,16 +7,16 @@
 
 import type {
   Analysis,
-  ChatHistory,
-  Report,
-  TimelineEvent,
-  Investigation,
   AnalysisAccepted,
   AnalysisListItem,
   ApiError,
+  ChatHistory,
   ErrorGroup,
+  Investigation,
   Page,
+  Report,
   SimilarResponse,
+  TimelineEvent,
   TokenResponse,
   User,
 } from "./types";
