@@ -1,0 +1,39 @@
+%% Upload → async analysis → poll (202 Accepted pattern)
+sequenceDiagram
+    autonumber
+    participant U as Browser (SPA)
+    participant A as FastAPI
+    participant P as PostgreSQL
+    participant Q as Redis (broker)
+    participant W as Celery worker
+    participant O as OpenAI
+    participant V as Qdrant
+
+    U->>A: POST /api/v1/logs (file or paste) + Bearer token
+    A->>A: validate size/type, stream to disk, sha256
+    A->>P: INSERT LogFile + Analysis(status=PENDING)
+    A->>P: COMMIT (before enqueue — avoids worker race)
+    A->>Q: enqueue analyze(analysis_id)
+    A-->>U: 202 Accepted { analysis_id, status: pending }
+
+    Q->>W: deliver job
+    W->>P: Analysis.status = RUNNING
+    W->>W: detect format → parse → fingerprint → group (WARNING+)
+    W->>P: INSERT ErrorGroups
+    opt AI enabled
+        W->>O: analyze top-N groups (structured output)
+        O-->>W: InsightResult (schema-validated)
+        W->>P: INSERT GroupInsights (+ token usage)
+    end
+    opt Qdrant configured
+        W->>V: upsert group-template vectors (payload: user_id)
+    end
+    W->>P: Analysis.status = COMPLETED (+ stats)
+
+    loop poll until settled
+        U->>A: GET /api/v1/analyses/{id}
+        A->>P: SELECT (user-scoped)
+        A-->>U: 200 { status, counts }
+    end
+    U->>A: GET /api/v1/analyses/{id}/groups
+    A-->>U: 200 { groups + insights }

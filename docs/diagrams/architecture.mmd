@@ -1,0 +1,50 @@
+%% System architecture — AI Log Analyzer
+%% Render: https://mermaid.live or any Mermaid-enabled Markdown viewer
+flowchart TB
+    subgraph Client
+        UI["React + TypeScript SPA<br/>(nginx-served, same-origin /api)"]
+    end
+
+    subgraph API["FastAPI (async) — process 1"]
+        AUTH["Auth / JWT"]
+        LOGS["Log ingestion"]
+        ANA["Analyses / timeline / investigation"]
+        CHAT["Chat (SSE)"]
+        REP["Reports / commands"]
+        MET["/metrics (Prometheus)"]
+    end
+
+    subgraph Worker["Celery worker — process 2 (same image)"]
+        PIPE["Pipeline: detect → parse → fingerprint/group"]
+        AIENR["AI enrichment (insights)"]
+        IDX["Embed + index"]
+    end
+
+    subgraph Data
+        PG[("PostgreSQL")]
+        RD[("Redis (broker + rate limit)")]
+        QD[("Qdrant (vectors)")]
+        FS[["Uploads volume (raw logs)"]]
+    end
+
+    subgraph External
+        OAI["OpenAI API (behind LLMProvider)"]
+    end
+
+    subgraph Observability
+        PROM["Prometheus"] --> GRAF["Grafana"]
+    end
+
+    UI -->|HTTPS| API
+    API --> PG
+    API --> RD
+    API --> FS
+    ANA --> QD
+    CHAT --> OAI
+    API -. enqueue .-> RD
+    RD -. consume .-> Worker
+    PIPE --> PG
+    AIENR --> OAI
+    IDX --> QD
+    PIPE --> FS
+    MET --> PROM

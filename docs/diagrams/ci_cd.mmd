@@ -1,0 +1,14 @@
+%% CI/CD — .github/workflows/ci.yml (+ deployment is manual, see 08_DevOps_Deployment)
+flowchart LR
+    DEV["Developer"] -->|feature branch| PR["Pull Request → main"]
+    PR --> CI{"GitHub Actions CI"}
+    CI --> Q["quality: ruff + black --check + mypy"]
+    CI --> T["tests: pytest --cov-fail-under=70"]
+    CI --> F["frontend: tsc --noEmit + vite build"]
+    Q --> GATE{"all green?"}
+    T --> GATE
+    F --> GATE
+    GATE -->|no| BLOCK["merge blocked"]
+    GATE -->|yes| MERGE["squash merge to main"]
+    MERGE -.manual.-> IMG["build images (api, frontend)"]
+    IMG -.manual.-> DEPLOY["docker compose up / kubectl apply<br/>+ alembic upgrade head"]

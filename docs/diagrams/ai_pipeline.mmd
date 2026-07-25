@@ -1,0 +1,25 @@
+%% AI + processing pipeline — app/services/pipeline.py + app/ai/*
+flowchart TB
+    START(["Raw log file on disk"]) --> DET["Format detection<br/>(sample head 50 lines)"]
+    DET --> PARSE["Parse each line<br/>json / syslog / logfmt / plain"]
+    PARSE --> FILTER{"level >= WARNING?"}
+    FILTER -->|no| DROP["skip (noise)"]
+    FILTER -->|yes| FP["Fingerprint:<br/>normalize uuid/ip/ts/num/paths<br/>→ sha256(level+template)"]
+    FP --> GRP["Aggregate into ErrorGroups<br/>(count, samples, first/last seen)"]
+    GRP --> PERSIST[("Persist ErrorGroups")]
+
+    PERSIST --> AICHK{"LLMProvider set?"}
+    AICHK -->|no| GROUPSONLY["Groups only (graceful degradation)"]
+    AICHK -->|yes| TOPN["Take top-N groups by count"]
+    TOPN --> CACHE{"Insight cached?<br/>(user_id, fingerprint)"}
+    CACHE -->|hit| REUSE["Reuse payload (0 tokens)"]
+    CACHE -->|miss| GUARD["Injection guard: fence + scrub samples"]
+    GUARD --> LLM["LLMProvider.analyze_group<br/>(strict JSON schema)"]
+    LLM --> VALID["Validate → InsightResult"]
+    VALID --> CMDFILTER["filter_commands (allow-list)"]
+    CMDFILTER --> STOREI[("Persist GroupInsight")]
+    REUSE --> STOREI
+
+    PERSIST --> IDXCHK{"Embedder + VectorStore set?"}
+    IDXCHK -->|yes| EMB["Embed group templates"]
+    EMB --> UPSERT[("Qdrant upsert<br/>payload: user_id, severity")]
