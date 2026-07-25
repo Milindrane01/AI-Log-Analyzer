@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+
 import { api } from "../api/client";
 import type { Analysis, ErrorGroup, Investigation, Report, SimilarIncident, TimelineEvent } from "../api/types";
 import { Confidence, ErrorNote, SeverityBadge, StatusPill } from "../components/ui";

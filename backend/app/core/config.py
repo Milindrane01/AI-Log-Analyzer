@@ -68,7 +68,7 @@ class Settings(BaseSettings):
 
     # --- auth / JWT ---
     # Dev default is deliberately recognizable; production boot REFUSES it.
-    jwt_secret_key: str = "dev-secret-do-not-use-in-prod"
+    jwt_secret_key: str = "dev-secret-do-not-use-in-prod"  # noqa: S105 -- placeholder, not a real secret
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
@@ -83,7 +83,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _no_dev_secrets_in_production(self) -> "Settings":
-        if self.is_production and self.jwt_secret_key == "dev-secret-do-not-use-in-prod":
+        if self.is_production and self.jwt_secret_key == "dev-secret-do-not-use-in-prod":  # noqa: S105
             raise ValueError("APP_JWT_SECRET_KEY must be set to a real secret in production")
         return self
 

@@ -15,14 +15,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, Timestamped, UUIDPrimaryKey
 
 
-class AnalysisStatus(str, enum.Enum):
+class AnalysisStatus(enum.StrEnum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
 
 
-class Severity(str, enum.Enum):
+class Severity(enum.StrEnum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"

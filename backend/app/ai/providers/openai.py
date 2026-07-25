@@ -79,23 +79,25 @@ class OpenAIProvider:
             "messages": [{"role": "system", "content": system}, *messages],
         }
         try:
-            async with httpx.AsyncClient(timeout=self._settings.ai_timeout_seconds) as client:
-                async with client.stream(
+            async with (
+                httpx.AsyncClient(timeout=self._settings.ai_timeout_seconds) as client,
+                client.stream(
                     "POST",
                     f"{self._settings.openai_base_url}/chat/completions",
                     headers={"Authorization": f"Bearer {self._settings.openai_api_key}"},
                     json=payload,
-                ) as resp:
-                    resp.raise_for_status()
-                    async for line in resp.aiter_lines():
-                        if not line.startswith("data: ") or line == "data: [DONE]":
-                            continue
-                        try:
-                            delta = json.loads(line[6:])["choices"][0]["delta"]
-                        except (KeyError, json.JSONDecodeError, IndexError):
-                            continue
-                        if content := delta.get("content"):
-                            yield content
+                ) as resp,
+            ):
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: ") or line == "data: [DONE]":
+                        continue
+                    try:
+                        delta = json.loads(line[6:])["choices"][0]["delta"]
+                    except (KeyError, json.JSONDecodeError, IndexError):
+                        continue
+                    if content := delta.get("content"):
+                        yield content
         except httpx.HTTPError as exc:
             raise LLMError(f"OpenAI stream failed: {exc}") from exc
 

@@ -5,12 +5,12 @@ and create_all both rely on this).
 """
 
 from app.models.audit import AuditLog
-from app.models.insight import GroupInsight
-from app.models.investigation import Investigation, InvestigationStep
-from app.models.report import IncidentReport
 from app.models.base import Base
 from app.models.chat import Conversation, Message
+from app.models.insight import GroupInsight
+from app.models.investigation import Investigation, InvestigationStep
 from app.models.log import Analysis, AnalysisStatus, ErrorGroup, LogFile, Severity
+from app.models.report import IncidentReport
 from app.models.user import User
 
 __all__ = [

@@ -12,10 +12,10 @@ import pytest
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 
-from app.core import ratelimit
-from app.core.config import get_settings
 from app.ai.embeddings.hashing import HashingEmbedder
 from app.ai.vectorstore.memory import InMemoryVectorStore
+from app.core import ratelimit
+from app.core.config import get_settings
 from app.core.queue import InlineTaskQueue
 from app.main import create_app
 from app.models import Base
