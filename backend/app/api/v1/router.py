@@ -3,7 +3,14 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
-    analyses, auth, chat, health, investigations, logs, reports, users,
+    analyses,
+    auth,
+    chat,
+    health,
+    investigations,
+    logs,
+    reports,
+    users,
 )
 
 api_router = APIRouter()

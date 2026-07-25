@@ -1,7 +1,5 @@
 """Log ingestion endpoints — 202 Accepted pattern (ADR-002)."""
 
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, Request, UploadFile, status
 
 from app.api.deps import CurrentUser, DBDep, SettingsDep

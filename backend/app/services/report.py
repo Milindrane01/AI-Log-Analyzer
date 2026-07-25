@@ -5,7 +5,7 @@ commands) — no extra LLM call needed. The AI value was spent in M4; the report
 composes it. This keeps report generation fast, free, and reproducible.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -71,7 +71,7 @@ def _title(groups: list[ErrorGroup], filename: str) -> str:
 
 
 def _render(analysis, log_file, groups, insights, title) -> str:
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
         f"# {title}",
         "",

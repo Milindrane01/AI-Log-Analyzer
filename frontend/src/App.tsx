@@ -1,4 +1,5 @@
 import { BrowserRouter, Link, NavLink, Route, Routes } from "react-router-dom";
+
 import { AuthProvider, RequireAuth, useAuth } from "./auth/AuthContext";
 import AnalysisPage from "./pages/Analysis";
 import Chat from "./pages/Chat";

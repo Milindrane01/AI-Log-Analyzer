@@ -5,7 +5,7 @@ bcrypt is slow BY DESIGN (work factor) — that slowness is the brute-force defe
 """
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
 import bcrypt
@@ -36,12 +36,12 @@ def create_token(settings: Settings, user_id: str, token_type: TokenType) -> str
     be used as an access token), jti (unique id, enables future revocation
     lists), iat/exp (validity window).
     """
-    if token_type == "access":
+    if token_type == "access":  # noqa: S105 -- type tag, not a secret
         lifetime = timedelta(minutes=settings.access_token_expire_minutes)
     else:
         lifetime = timedelta(days=settings.refresh_token_expire_days)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "sub": user_id,
         "type": token_type,

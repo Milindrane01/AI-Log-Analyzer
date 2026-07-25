@@ -4,7 +4,7 @@ Runs OUTSIDE the request cycle (Celery worker, or inline in tests). Owns its
 own session/transaction because there is no request to attach to.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
 from sqlalchemy import select
@@ -66,7 +66,7 @@ async def run_analysis(
         log_file = await session.get(LogFile, analysis.log_file_id)
 
         analysis.status = AnalysisStatus.RUNNING
-        analysis.started_at = datetime.now(timezone.utc)
+        analysis.started_at = datetime.now(UTC)
         await session.commit()
 
         try:
@@ -77,7 +77,7 @@ async def run_analysis(
             log.error("analysis_failed", analysis_id=analysis_id, exc_info=True)
             analysis.status = AnalysisStatus.FAILED
             analysis.error_message = str(exc)[:2000]
-        analysis.finished_at = datetime.now(timezone.utc)
+        analysis.finished_at = datetime.now(UTC)
         await session.commit()
         log.info("analysis_finished", analysis_id=analysis_id, status=analysis.status.value)
 

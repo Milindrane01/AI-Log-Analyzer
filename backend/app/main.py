@@ -18,10 +18,10 @@ from fastapi import FastAPI
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.db import dispose_engine, init_engine
-from app.core.queue import CeleryTaskQueue
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging
 from app.core.metrics import setup_metrics
+from app.core.queue import CeleryTaskQueue
 
 log = structlog.get_logger()
 

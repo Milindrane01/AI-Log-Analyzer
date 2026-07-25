@@ -2,10 +2,10 @@
 
 import asyncio
 
-from alembic import context
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from alembic import context
 from app.core.config import get_settings
 from app.models import Base  # imports ALL models so autogenerate sees them
 
