@@ -6,23 +6,23 @@ investigation can do and keeps every step reproducible/inspectable.
 """
 
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import Any, Protocol
 
 
 @dataclass(slots=True)
 class Evidence:
     """Read-only view of the analysis an investigation reasons over."""
 
-    timeline: list[dict]  # ordered events (from services.timeline)
-    groups: list[dict]  # error groups with insights
-    first_failure: dict | None
+    timeline: list[dict[str, Any]]  # ordered events (from services.timeline)
+    groups: list[dict[str, Any]]  # error groups with insights
+    first_failure: dict[str, Any] | None
 
 
 @dataclass(slots=True)
 class Step:
     agent: str
     action: str
-    content: dict
+    content: dict[str, Any]
 
 
 @dataclass(slots=True)
@@ -36,6 +36,6 @@ class InvestigationOutcome:
 class Agent(Protocol):
     name: str
 
-    def run(self, evidence: Evidence, scratch: dict) -> Step:
+    def run(self, evidence: Evidence, scratch: dict[str, Any]) -> Step:
         """Do one bounded unit of work; append findings to `scratch`."""
         ...

@@ -14,6 +14,7 @@ import structlog
 from fastapi import APIRouter, Request
 from sqlalchemy import text
 
+from app.ai.vectorstore.base import VectorStore
 from app.api.deps import SettingsDep
 from app.schemas.health import HealthResponse, ReadinessResponse
 
@@ -31,7 +32,7 @@ async def health(settings: SettingsDep) -> HealthResponse:
     )
 
 
-async def _store_ok(store) -> bool:
+async def _store_ok(store: VectorStore) -> bool:
     try:
         return await store.healthy()
     except Exception:

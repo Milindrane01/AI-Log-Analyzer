@@ -8,8 +8,11 @@ from datetime import UTC, datetime
 
 import structlog
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.ai.embeddings.base import EmbeddingProvider
+from app.ai.providers.base import LLMProvider
+from app.ai.vectorstore.base import VectorStore
 from app.models import Analysis, AnalysisStatus, ErrorGroup, LogFile, Severity
 from app.parsing import detector
 from app.parsing.fingerprint import fingerprint
@@ -52,10 +55,10 @@ class _GroupAccumulator:
 
 async def run_analysis(
     analysis_id: str,
-    sessionmaker: async_sessionmaker,
-    provider=None,  # LLMProvider | None — None = AI disabled, groups only
-    embedder=None,  # EmbeddingProvider | None
-    vector_store=None,  # VectorStore | None — both set = similarity indexing on
+    sessionmaker: async_sessionmaker[AsyncSession],
+    provider: LLMProvider | None = None,  # None = AI disabled, groups only
+    embedder: EmbeddingProvider | None = None,
+    vector_store: VectorStore | None = None,  # both set = similarity indexing on
 ) -> None:
     """Execute one analysis end-to-end. Any exception → status FAILED (never lost)."""
     async with sessionmaker() as session:
@@ -64,6 +67,8 @@ async def run_analysis(
             log.error("analysis_not_found", analysis_id=analysis_id)
             return
         log_file = await session.get(LogFile, analysis.log_file_id)
+        if log_file is None:  # guaranteed by the FK on analysis.log_file_id
+            raise RuntimeError(f"log_file missing for analysis {analysis_id}")
 
         analysis.status = AnalysisStatus.RUNNING
         analysis.started_at = datetime.now(UTC)
@@ -72,7 +77,12 @@ async def run_analysis(
         try:
             stats = await _process(session, analysis, log_file, provider, embedder, vector_store)
             analysis.status = AnalysisStatus.COMPLETED
-            analysis.total_lines, analysis.parsed_lines, analysis.error_lines, analysis.group_count = stats
+            (
+                analysis.total_lines,
+                analysis.parsed_lines,
+                analysis.error_lines,
+                analysis.group_count,
+            ) = stats
         except Exception as exc:
             log.error("analysis_failed", analysis_id=analysis_id, exc_info=True)
             analysis.status = AnalysisStatus.FAILED
@@ -83,12 +93,12 @@ async def run_analysis(
 
 
 async def _process(
-    session,
+    session: AsyncSession,
     analysis: Analysis,
     log_file: LogFile,
-    provider=None,
-    embedder=None,
-    vector_store=None,
+    provider: LLMProvider | None = None,
+    embedder: EmbeddingProvider | None = None,
+    vector_store: VectorStore | None = None,
 ) -> tuple[int, int, int, int]:
     with open(log_file.storage_path, encoding="utf-8", errors="replace") as fh:
         head = [fh.readline() for _ in range(detector.SAMPLE_SIZE)]
@@ -136,10 +146,10 @@ async def _process(
         from app.core.config import get_settings
 
         persisted = (
-            await session.execute(
-                select(ErrorGroup).where(ErrorGroup.analysis_id == analysis.id)
-            )
-        ).scalars().all()
+            (await session.execute(select(ErrorGroup).where(ErrorGroup.analysis_id == analysis.id)))
+            .scalars()
+            .all()
+        )
         written = await enrich_groups(
             session,
             provider,
@@ -154,10 +164,10 @@ async def _process(
         from app.services.similarity import index_groups
 
         persisted = (
-            await session.execute(
-                select(ErrorGroup).where(ErrorGroup.analysis_id == analysis.id)
-            )
-        ).scalars().all()
+            (await session.execute(select(ErrorGroup).where(ErrorGroup.analysis_id == analysis.id)))
+            .scalars()
+            .all()
+        )
         try:
             await index_groups(
                 embedder, vector_store, list(persisted), analysis.user_id, analysis.id
@@ -168,7 +178,9 @@ async def _process(
     return total, parsed, errors, len(groups)
 
 
-async def get_analysis_for_user(session, analysis_id: str, user_id: str) -> Analysis | None:
+async def get_analysis_for_user(
+    session: AsyncSession, analysis_id: str, user_id: str
+) -> Analysis | None:
     result = await session.execute(
         select(Analysis).where(Analysis.id == analysis_id, Analysis.user_id == user_id)
     )

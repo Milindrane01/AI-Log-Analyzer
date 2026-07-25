@@ -6,6 +6,7 @@ defensible in production instead of a party trick.
 """
 
 import enum
+from typing import Any
 
 from sqlalchemy import JSON, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -39,10 +40,12 @@ class InvestigationStep(Base, UUIDPrimaryKey, Timestamped):
     __tablename__ = "investigation_steps"
 
     investigation_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("investigations.id", ondelete="CASCADE"),
-        index=True, nullable=False,
+        String(36),
+        ForeignKey("investigations.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
     )
     seq: Mapped[int] = mapped_column(Integer, nullable=False)
     agent: Mapped[str] = mapped_column(String(16), nullable=False)  # planner|investigator|verifier
     action: Mapped[str] = mapped_column(String(64), nullable=False)
-    content: Mapped[dict] = mapped_column(JSON, nullable=False)
+    content: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

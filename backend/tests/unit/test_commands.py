@@ -30,8 +30,23 @@ def test_missing_param_rejected() -> None:
 
 def test_every_catalog_template_is_read_only() -> None:
     # Deny-by-default contract: no mutating verbs anywhere in the catalog.
-    forbidden = ("delete", "rm ", "restart", "apply", "scale", "drop", "kill", "reboot",
-                 "shutdown", "create", "edit", "patch", "cordon", "drain", "terminate")
+    forbidden = (
+        "delete",
+        "rm ",
+        "restart",
+        "apply",
+        "scale",
+        "drop",
+        "kill",
+        "reboot",
+        "shutdown",
+        "create",
+        "edit",
+        "patch",
+        "cordon",
+        "drain",
+        "terminate",
+    )
     for template in CATALOG.values():
         lowered = template.template.lower()
         assert not any(word in lowered for word in forbidden), template.id

@@ -4,6 +4,9 @@ Serves two jobs: (1) the entire test suite runs offline; (2) the app demos
 end-to-end without an API key (AI features visibly work, marked as mock model).
 """
 
+from collections.abc import AsyncIterator
+from typing import Any
+
 from app.ai.providers.base import (
     InsightRequest,
     InsightResult,
@@ -11,7 +14,7 @@ from app.ai.providers.base import (
     ProviderUsage,
 )
 
-_RULES: list[tuple[tuple[str, ...], dict]] = [
+_RULES: list[tuple[tuple[str, ...], dict[str, Any]]] = [
     (
         ("database", "postgres", "connection", "timeout", "refused"),
         {
@@ -96,7 +99,7 @@ class MockLLMProvider:
         )
         return ProviderResponse(result=result, usage=ProviderUsage(model="mock"))
 
-    async def stream_chat(self, system: str, messages: list[dict]):
+    async def stream_chat(self, system: str, messages: list[dict[str, str]]) -> AsyncIterator[str]:
         """Grounded canned answer: cite the first line range found in the context."""
         self.calls += 1
         context = messages[-1]["content"] if messages else ""

@@ -7,7 +7,11 @@ loop, zero infrastructure). Same seam a real system uses to swap SQS/Celery/etc.
 
 from typing import Protocol
 
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from app.ai.embeddings.base import EmbeddingProvider
+from app.ai.providers.base import LLMProvider
+from app.ai.vectorstore.base import VectorStore
 
 
 class TaskQueue(Protocol):
@@ -27,7 +31,11 @@ class InlineTaskQueue:
     """Tests/dev-without-redis: run the pipeline right now, in-process."""
 
     def __init__(
-        self, sessionmaker: async_sessionmaker, provider=None, embedder=None, vector_store=None
+        self,
+        sessionmaker: async_sessionmaker[AsyncSession],
+        provider: LLMProvider | None = None,
+        embedder: EmbeddingProvider | None = None,
+        vector_store: VectorStore | None = None,
     ) -> None:
         self._sessionmaker = sessionmaker
         self._provider = provider

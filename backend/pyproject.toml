@@ -66,6 +66,14 @@ exclude = ["alembic/"]
 module = "tests.*"
 disallow_untyped_decorators = false
 
+[[tool.mypy.overrides]]
+module = ["sentence_transformers.*", "celery.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "app.workers.tasks"
+disallow_untyped_decorators = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

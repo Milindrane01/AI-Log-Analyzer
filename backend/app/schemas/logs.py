@@ -1,6 +1,7 @@
 """Ingestion + analysis wire formats."""
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -41,7 +42,7 @@ class InsightResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    payload: dict
+    payload: dict[str, Any]
     model: str
     from_cache: bool
 

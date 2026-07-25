@@ -54,9 +54,7 @@ async def test_chat_persists_conversation(client: AsyncClient, auth_headers: dic
         headers=auth_headers,
     )
 
-    history = (
-        await client.get(f"/api/v1/logs/{file_id}/chat", headers=auth_headers)
-    ).json()
+    history = (await client.get(f"/api/v1/logs/{file_id}/chat", headers=auth_headers)).json()
 
     roles = [m["role"] for m in history["items"]]
     assert roles == ["user", "assistant"]

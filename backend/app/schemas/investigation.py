@@ -1,6 +1,7 @@
 """Timeline + investigation wire formats."""
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -23,7 +24,7 @@ class InvestigationStepResponse(BaseModel):
     seq: int
     agent: str
     action: str
-    content: dict
+    content: dict[str, Any]
 
 
 class InvestigationResponse(BaseModel):

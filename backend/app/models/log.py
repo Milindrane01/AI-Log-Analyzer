@@ -86,6 +86,6 @@ class ErrorGroup(Base, UUIDPrimaryKey, Timestamped):
     count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     first_seen: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_seen: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    sample_lines: Mapped[list | None] = mapped_column(JSON, nullable=True)  # up to 5 raw lines
+    sample_lines: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)  # up to 5 raw lines
 
     analysis: Mapped[Analysis] = relationship(back_populates="groups")

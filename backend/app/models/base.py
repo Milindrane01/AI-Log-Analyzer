@@ -15,9 +15,7 @@ class UUIDPrimaryKey:
     """UUID PKs: no enumeration attacks (/users/1, /users/2...), safe to expose,
     and generatable client-side. Stored as string for SQLite test compatibility."""
 
-    id: Mapped[str] = mapped_column(
-        primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid.uuid4()))
 
 
 class Timestamped:

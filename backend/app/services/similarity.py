@@ -1,5 +1,7 @@
 """Similar-incident search: index error groups, find related past incidents."""
 
+from typing import Any
+
 import structlog
 
 from app.ai.embeddings.base import EmbeddingProvider
@@ -50,11 +52,11 @@ async def find_similar(
     user_id: str,
     exclude_analysis_id: str,
     limit: int = 5,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Past incidents similar to this group, excluding the current analysis."""
     [vector] = await embedder.embed([group.template])
     hits = await store.search(vector, user_id=user_id, limit=limit + 20)
-    results = []
+    results: list[dict[str, Any]] = []
     for hit in hits:
         if hit.payload.get("analysis_id") == exclude_analysis_id:
             continue  # same upload isn't a "past incident"

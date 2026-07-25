@@ -1,16 +1,18 @@
 """Log ingestion endpoints — 202 Accepted pattern (ADR-002)."""
 
 from fastapi import APIRouter, Depends, Request, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser, DBDep, SettingsDep
 from app.core.ratelimit import RateLimiter
+from app.models import Analysis
 from app.schemas.logs import AnalysisAccepted, PasteRequest
 from app.services.ingestion import IngestionService
 
 router = APIRouter(prefix="/logs", tags=["logs"])
 
 
-async def _accept(request: Request, session, analysis) -> AnalysisAccepted:
+async def _accept(request: Request, session: AsyncSession, analysis: Analysis) -> AnalysisAccepted:
     # COMMIT BEFORE ENQUEUE. The worker opens its own session; if we enqueue
     # inside an uncommitted transaction, the worker races ahead and finds
     # nothing (a classic async-job bug — our tests caught it live).

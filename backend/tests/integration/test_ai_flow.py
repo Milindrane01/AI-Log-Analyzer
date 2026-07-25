@@ -31,9 +31,7 @@ async def _analyze(client: AsyncClient, headers: dict, content: str) -> dict:
         await client.post("/api/v1/logs/paste", json={"content": content}, headers=headers)
     ).json()
     return (
-        await client.get(
-            f"/api/v1/analyses/{accepted['analysis_id']}/groups", headers=headers
-        )
+        await client.get(f"/api/v1/analyses/{accepted['analysis_id']}/groups", headers=headers)
     ).json()
 
 
@@ -101,9 +99,7 @@ async def test_failing_provider_does_not_fail_analysis(
             raise LLMError("simulated outage")
 
     app = client._transport.app  # type: ignore[attr-defined]
-    app.state.task_queue = InlineTaskQueue(
-        app.state.db_sessionmaker, provider=ExplodingProvider()
-    )
+    app.state.task_queue = InlineTaskQueue(app.state.db_sessionmaker, provider=ExplodingProvider())
     accepted = (
         await client.post(
             "/api/v1/logs/paste", json={"content": DB_TIMEOUT_LOG}, headers=auth_headers

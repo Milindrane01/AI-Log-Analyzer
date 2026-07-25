@@ -22,8 +22,28 @@ from app.ai.rag.chunking import Chunk
 _TOKEN = re.compile(r"[a-z0-9]{2,}")
 COSINE_WEIGHT = 0.5  # secondary signal (dominant again with semantic embedders)
 MIN_SCORE = 0.2  # ≈ one query term matched; below this → refuse, don't guess
-_STOPWORDS = {"the", "a", "an", "is", "was", "did", "do", "what", "why", "how",
-              "when", "who", "with", "in", "on", "at", "of", "to", "and", "or"}
+_STOPWORDS = {
+    "the",
+    "a",
+    "an",
+    "is",
+    "was",
+    "did",
+    "do",
+    "what",
+    "why",
+    "how",
+    "when",
+    "who",
+    "with",
+    "in",
+    "on",
+    "at",
+    "of",
+    "to",
+    "and",
+    "or",
+}
 
 
 @dataclass(slots=True)
@@ -39,9 +59,7 @@ async def retrieve(
         return []
     vectors = await embedder.embed([c.text for c in chunks])
     [query_vec] = await embedder.embed([query])
-    query_tokens = [
-        t for t in set(_TOKEN.findall(query.lower())) if t not in _STOPWORDS
-    ]
+    query_tokens = [t for t in set(_TOKEN.findall(query.lower())) if t not in _STOPWORDS]
 
     scored: list[ScoredChunk] = []
     for chunk, vec in zip(chunks, vectors, strict=True):

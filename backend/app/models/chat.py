@@ -1,5 +1,7 @@
 """Chat domain: one conversation per (user, log file) in v1."""
 
+from typing import Any
+
 from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -26,4 +28,6 @@ class Message(Base, UUIDPrimaryKey, Timestamped):
     )
     role: Mapped[str] = mapped_column(String(16), nullable=False)  # user | assistant
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    citations: Mapped[list | None] = mapped_column(JSON, nullable=True)  # [{start_line, end_line}]
+    citations: Mapped[list[dict[str, Any]] | None] = mapped_column(
+        JSON, nullable=True
+    )  # [{start_line, end_line}]

@@ -37,7 +37,9 @@ Example (for template "connection timeout to postgres at <ip>"):
 
 
 def build_user_prompt(request: InsightRequest) -> str:
-    format_note = f" (detected format: {request.detected_format})" if request.detected_format else ""
+    format_note = (
+        f" (detected format: {request.detected_format})" if request.detected_format else ""
+    )
     return (
         f"Error group{format_note}\n"
         f"Level: {request.level}\n"

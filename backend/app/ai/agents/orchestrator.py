@@ -7,6 +7,7 @@ established so far (graceful, never hanging).
 """
 
 import time
+from typing import Any
 
 from app.ai.agents.agents import default_agents
 from app.ai.agents.base import Evidence, InvestigationOutcome, Step
@@ -18,7 +19,7 @@ DEADLINE_SECONDS = 20.0
 def run_investigation(evidence: Evidence) -> InvestigationOutcome:
     """Execute planner → investigator → verifier within budget; assemble the outcome."""
     agents = default_agents()
-    scratch: dict = {}
+    scratch: dict[str, Any] = {}
     steps: list[Step] = []
     started = time.monotonic()
 

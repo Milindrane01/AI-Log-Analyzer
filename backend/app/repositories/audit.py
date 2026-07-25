@@ -1,5 +1,7 @@
 """Audit log writes — append-only, no update/delete methods on purpose."""
 
+from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.audit import AuditLog
@@ -14,7 +16,7 @@ class AuditRepository:
         action: str,
         outcome: str,
         user_id: str | None = None,
-        context: dict | None = None,
+        context: dict[str, Any] | None = None,
     ) -> None:
         self._session.add(
             AuditLog(action=action, outcome=outcome, user_id=user_id, context=context)

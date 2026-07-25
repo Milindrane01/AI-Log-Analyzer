@@ -25,7 +25,8 @@ class HashingEmbedder:
     def _one(self, text: str) -> list[float]:
         vec = [0.0] * self.dim
         for token in _TOKEN.findall(text.lower()):
-            bucket = int.from_bytes(hashlib.sha1(token.encode()).digest()[:4], "big") % self.dim  # noqa: S324
+            digest = hashlib.sha1(token.encode()).digest()  # noqa: S324
+            bucket = int.from_bytes(digest[:4], "big") % self.dim
             vec[bucket] += 1.0
         norm = math.sqrt(sum(v * v for v in vec)) or 1.0
         return [v / norm for v in vec]

@@ -11,6 +11,7 @@ from collections.abc import AsyncIterator
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser, DBDep
 from app.core.exceptions import DomainError, NotFoundError
@@ -26,14 +27,16 @@ class AIUnavailableError(DomainError):
     code = "ai_unavailable"
 
 
-async def _get_file(session, log_file_id: str, user_id: str) -> LogFile:
+async def _get_file(session: AsyncSession, log_file_id: str, user_id: str) -> LogFile:
     log_file = await session.get(LogFile, log_file_id)
     if log_file is None or log_file.user_id != user_id:
         raise NotFoundError("Log file not found")
     return log_file
 
 
-async def _get_or_create_conversation(session, user_id: str, log_file_id: str) -> Conversation:
+async def _get_or_create_conversation(
+    session: AsyncSession, user_id: str, log_file_id: str
+) -> Conversation:
     conv = (
         await session.execute(
             select(Conversation).where(
@@ -54,14 +57,10 @@ async def chat_history(log_file_id: str, user: CurrentUser, session: DBDep) -> C
     conv = await _get_or_create_conversation(session, user.id, log_file_id)
     rows = (
         await session.execute(
-            select(Message)
-            .where(Message.conversation_id == conv.id)
-            .order_by(Message.created_at)
+            select(Message).where(Message.conversation_id == conv.id).order_by(Message.created_at)
         )
     ).scalars()
-    return ChatHistory(
-        conversation_id=conv.id, items=[ChatMessage.model_validate(m) for m in rows]
-    )
+    return ChatHistory(conversation_id=conv.id, items=[ChatMessage.model_validate(m) for m in rows])
 
 
 @router.post(
@@ -86,9 +85,7 @@ async def chat_ask(
 
     history_rows = (
         await session.execute(
-            select(Message)
-            .where(Message.conversation_id == conv.id)
-            .order_by(Message.created_at)
+            select(Message).where(Message.conversation_id == conv.id).order_by(Message.created_at)
         )
     ).scalars()
     history = [{"role": m.role, "content": m.content} for m in history_rows]

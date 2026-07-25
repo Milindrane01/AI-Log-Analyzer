@@ -11,9 +11,12 @@ _SYSLOG = re.compile(
     r"(?P<host>\S+)\s+(?P<proc>[\w./-]+)(?:\[(?P<pid>\d+)\])?:\s*"
     r"(?P<message>.*)$"
 )
-_MONTHS = {m: i for i, m in enumerate(
-    ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1
-)}
+_MONTHS = {
+    m: i
+    for i, m in enumerate(
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1
+    )
+}
 # Severity keywords inside the free-text message (syslog lines rarely carry a level field)
 _LEVEL_HINT = re.compile(r"\b(error|err|warn|warning|crit|critical|fatal|fail(?:ed|ure)?)\b", re.I)
 

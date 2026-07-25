@@ -14,9 +14,7 @@ LOG = """\
 
 async def _analyze_with_ai(client: AsyncClient, headers: dict) -> str:
     app = client._transport.app  # type: ignore[attr-defined]
-    app.state.task_queue = InlineTaskQueue(
-        app.state.db_sessionmaker, provider=MockLLMProvider()
-    )
+    app.state.task_queue = InlineTaskQueue(app.state.db_sessionmaker, provider=MockLLMProvider())
     resp = await client.post("/api/v1/logs/paste", json={"content": LOG}, headers=headers)
     return resp.json()["analysis_id"]
 
@@ -55,7 +53,9 @@ async def test_commands_endpoint_for_group(client: AsyncClient, auth_headers: di
     groups = (
         await client.get(f"/api/v1/analyses/{analysis_id}/groups", headers=auth_headers)
     ).json()["items"]
-    db_group = next(g for g in groups if g["insight"]["payload"]["error_type"] == "Database Connectivity")
+    db_group = next(
+        g for g in groups if g["insight"]["payload"]["error_type"] == "Database Connectivity"
+    )
 
     resp = await client.get(
         f"/api/v1/analyses/{analysis_id}/groups/{db_group['id']}/commands", headers=auth_headers
@@ -82,9 +82,7 @@ async def test_report_requires_completed_analysis_ownership(
     assert resp.status_code == 404  # not yours → doesn't exist
 
 
-async def test_get_report_before_generation_is_404(
-    client: AsyncClient, auth_headers: dict
-) -> None:
+async def test_get_report_before_generation_is_404(client: AsyncClient, auth_headers: dict) -> None:
     analysis_id = await _analyze_with_ai(client, auth_headers)
     resp = await client.get(f"/api/v1/analyses/{analysis_id}/report", headers=auth_headers)
     assert resp.status_code == 404

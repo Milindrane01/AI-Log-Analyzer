@@ -12,7 +12,11 @@ from app.ai.commands.catalog import CATALOG, InvalidCommandParams, render_comman
 # error_type (from InsightResult) → ordered template ids to suggest
 _SUGGESTIONS: dict[str, list[str]] = {
     "Database Connectivity": [
-        "k8s_get_pods", "k8s_logs", "linux_systemctl_status", "linux_pg_ready", "linux_port_check"
+        "k8s_get_pods",
+        "k8s_logs",
+        "linux_systemctl_status",
+        "linux_pg_ready",
+        "linux_port_check",
     ],
     "Resource Exhaustion": ["k8s_top_pods", "linux_mem", "linux_disk", "k8s_describe_pod"],
     "Performance Degradation": ["k8s_top_pods", "linux_mem", "k8s_logs"],
@@ -42,5 +46,7 @@ def suggest_commands(error_type: str) -> list[dict[str, str]]:
             rendered = render_command(tid, params)
         except InvalidCommandParams:
             continue  # defense in depth: skip anything that fails validation
-        out.append({"command": rendered, "description": template.description, "domain": template.domain})
+        out.append(
+            {"command": rendered, "description": template.description, "domain": template.domain}
+        )
     return out

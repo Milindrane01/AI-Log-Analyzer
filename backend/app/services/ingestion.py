@@ -87,6 +87,11 @@ class IngestionService:
         analysis = Analysis(user_id=user_id, log_file_id=log_file.id)
         self._session.add(analysis)
         await self._session.flush()
-        log.info("log_ingested", log_file_id=log_file.id, analysis_id=analysis.id,
-                 size_bytes=size, source=source)
+        log.info(
+            "log_ingested",
+            log_file_id=log_file.id,
+            analysis_id=analysis.id,
+            size_bytes=size,
+            source=source,
+        )
         return analysis

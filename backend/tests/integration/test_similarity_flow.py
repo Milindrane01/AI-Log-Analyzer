@@ -38,9 +38,7 @@ async def test_similar_incident_found_across_analyses(
     assert top["score"] > 0.4
 
 
-async def test_own_analysis_excluded_from_similar(
-    client: AsyncClient, auth_headers: dict
-) -> None:
+async def test_own_analysis_excluded_from_similar(client: AsyncClient, auth_headers: dict) -> None:
     analysis_id = await _analyze(client, auth_headers, INCIDENT_MONDAY)
 
     body = (
@@ -50,9 +48,7 @@ async def test_own_analysis_excluded_from_similar(
     assert all(item["analysis_id"] != analysis_id for item in body["items"])
 
 
-async def test_similarity_isolated_between_users(
-    client: AsyncClient, auth_headers: dict
-) -> None:
+async def test_similarity_isolated_between_users(client: AsyncClient, auth_headers: dict) -> None:
     await _analyze(client, auth_headers, INCIDENT_MONDAY)
 
     other = {"email": "other@example.com", "password": "another-long-pass"}
@@ -68,9 +64,7 @@ async def test_similarity_isolated_between_users(
     assert body["items"] == []  # user A's incidents are invisible to user B
 
 
-async def test_history_endpoint_lists_analyses(
-    client: AsyncClient, auth_headers: dict
-) -> None:
+async def test_history_endpoint_lists_analyses(client: AsyncClient, auth_headers: dict) -> None:
     await _analyze(client, auth_headers, INCIDENT_MONDAY)
     await _analyze(client, auth_headers, UNRELATED)
 

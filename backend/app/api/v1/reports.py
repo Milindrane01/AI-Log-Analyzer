@@ -82,9 +82,7 @@ async def group_commands(
     if group is None or group.analysis_id != analysis_id:
         raise NotFoundError("Group not found")
     insight = (
-        await session.execute(
-            select(GroupInsight).where(GroupInsight.group_id == group_id)
-        )
+        await session.execute(select(GroupInsight).where(GroupInsight.group_id == group_id))
     ).scalar_one_or_none()
     error_type = insight.payload["error_type"] if insight else "Application Error"
 

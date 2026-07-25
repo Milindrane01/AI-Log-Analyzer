@@ -71,13 +71,17 @@ async def similar_incidents(
     from app.services.similarity import find_similar
 
     top_groups = (
-        await session.execute(
-            select(ErrorGroup)
-            .where(ErrorGroup.analysis_id == analysis_id)
-            .order_by(ErrorGroup.count.desc())
-            .limit(3)  # similar search on the top groups only
+        (
+            await session.execute(
+                select(ErrorGroup)
+                .where(ErrorGroup.analysis_id == analysis_id)
+                .order_by(ErrorGroup.count.desc())
+                .limit(3)  # similar search on the top groups only
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     seen: set[str] = set()
     items: list[SimilarIncident] = []

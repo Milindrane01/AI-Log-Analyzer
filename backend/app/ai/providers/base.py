@@ -4,6 +4,7 @@ The pipeline speaks THESE types only. Swapping OpenAI→Anthropic→local model,
 mocking in tests, never touches pipeline code.
 """
 
+from collections.abc import AsyncIterator
 from typing import Literal, Protocol
 
 from pydantic import BaseModel, Field
@@ -26,7 +27,9 @@ class InsightRequest(BaseModel):
 class InsightResult(BaseModel):
     """Schema-validated model output. This IS the response_format sent to OpenAI."""
 
-    error_type: str = Field(max_length=64, description="Short category, e.g. 'Database Connectivity'")
+    error_type: str = Field(
+        max_length=64, description="Short category, e.g. 'Database Connectivity'"
+    )
     severity: Literal["critical", "high", "medium", "low"]
     root_cause: str = Field(max_length=1000)
     possible_reasons: list[str] = Field(max_length=6)
@@ -50,4 +53,10 @@ class ProviderResponse(BaseModel):
 class LLMProvider(Protocol):
     async def analyze_group(self, request: InsightRequest) -> ProviderResponse:
         """Analyze one error group. Raises LLMError on any failure."""
+        ...
+
+
+class ChatProvider(Protocol):
+    def stream_chat(self, system: str, messages: list[dict[str, str]]) -> AsyncIterator[str]:
+        """Yield answer tokens for a streaming chat completion."""
         ...

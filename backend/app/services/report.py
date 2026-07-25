@@ -15,12 +15,16 @@ from app.models import Analysis, ErrorGroup, LogFile
 from app.models.insight import GroupInsight
 from app.models.report import IncidentReport
 
+_Insights = dict[str, GroupInsight]
+
 _SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
 
 async def generate_report(session: AsyncSession, analysis: Analysis) -> IncidentReport:
     """Build (or rebuild) the incident report for a completed analysis."""
     log_file = await session.get(LogFile, analysis.log_file_id)
+    if log_file is None:  # guaranteed by the FK on analysis.log_file_id
+        raise RuntimeError(f"log_file missing for analysis {analysis.id}")
     groups = list(
         (
             await session.execute(
@@ -34,9 +38,7 @@ async def generate_report(session: AsyncSession, analysis: Analysis) -> Incident
         i.group_id: i
         for i in (
             await session.execute(
-                select(GroupInsight).where(
-                    GroupInsight.group_id.in_([g.id for g in groups])
-                )
+                select(GroupInsight).where(GroupInsight.group_id.in_([g.id for g in groups]))
             )
         ).scalars()
     }
@@ -70,7 +72,13 @@ def _title(groups: list[ErrorGroup], filename: str) -> str:
     return f"Incident report — {top.severity.value.title()}: {filename}"
 
 
-def _render(analysis, log_file, groups, insights, title) -> str:
+def _render(
+    analysis: Analysis,
+    log_file: LogFile,
+    groups: list[ErrorGroup],
+    insights: _Insights,
+    title: str,
+) -> str:
     now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
         f"# {title}",
@@ -98,7 +106,7 @@ def _render(analysis, log_file, groups, insights, title) -> str:
     return "\n".join(lines)
 
 
-def _summary(groups, insights) -> str:
+def _summary(groups: list[ErrorGroup], insights: _Insights) -> str:
     if not groups:
         return "No warning- or error-level entries were found in this log."
     top = groups[0]
@@ -112,14 +120,14 @@ def _summary(groups, insights) -> str:
     return f"The most frequent issue occurred {top.count} times: `{top.template}`."
 
 
-def _severity_breakdown(groups) -> str:
+def _severity_breakdown(groups: list[ErrorGroup]) -> str:
     counts: dict[str, int] = {}
     for g in groups:
         counts[g.severity.value] = counts.get(g.severity.value, 0) + 1
     return ", ".join(f"{n} {sev}" for sev, n in sorted(counts.items())) or "none"
 
 
-def _finding(index, group, insight) -> list[str]:
+def _finding(index: int, group: ErrorGroup, insight: GroupInsight | None) -> list[str]:
     header = f"### {index}. "
     if insight:
         p = insight.payload
@@ -149,16 +157,28 @@ def _finding(index, group, insight) -> list[str]:
             "",
         ]
     if group.sample_lines:
-        out.extend(["<details><summary>Sample lines</summary>", "", "```",
-                    *group.sample_lines[:3], "```", "", "</details>", ""])
+        out.extend(
+            [
+                "<details><summary>Sample lines</summary>",
+                "",
+                "```",
+                *group.sample_lines[:3],
+                "```",
+                "",
+                "</details>",
+                "",
+            ]
+        )
     return out
 
 
-def _prevention(groups, insights) -> str:
+def _prevention(groups: list[ErrorGroup], insights: _Insights) -> str:
     tips = []
     for group in groups[:3]:
         insight = insights.get(group.id)
         if insight:
-            tips.append(f"- Address **{insight.payload['error_type']}**: "
-                        f"{insight.payload['suggested_fix']}")
+            tips.append(
+                f"- Address **{insight.payload['error_type']}**: "
+                f"{insight.payload['suggested_fix']}"
+            )
     return "\n".join(tips) if tips else "- Review the findings above and add monitoring/alerts."

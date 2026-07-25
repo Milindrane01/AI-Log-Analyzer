@@ -7,6 +7,7 @@ using httpx over vendor SDKs). RED method: Rate, Errors, Duration per route.
 
 import time
 from collections import defaultdict
+from collections.abc import Awaitable, Callable
 from threading import Lock
 
 from fastapi import FastAPI, Request, Response
@@ -26,7 +27,9 @@ def _route_template(request: Request) -> str:
 
 def setup_metrics(app: FastAPI) -> None:
     @app.middleware("http")
-    async def _track(request: Request, call_next):  # noqa: ANN001, ANN202
+    async def _track(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         start = time.perf_counter()
         response = await call_next(request)
         elapsed = time.perf_counter() - start

@@ -15,7 +15,7 @@ class ChatMessage(BaseModel):
     id: str
     role: str
     content: str
-    citations: list[dict] | None
+    citations: list[dict[str, int]] | None
     created_at: datetime
 
 

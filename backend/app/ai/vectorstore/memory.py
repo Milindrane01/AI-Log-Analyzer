@@ -14,9 +14,7 @@ class InMemoryVectorStore:
         for point in points:
             self._points[point.id] = point
 
-    async def search(
-        self, vector: list[float], user_id: str, limit: int = 10
-    ) -> list[VectorHit]:
+    async def search(self, vector: list[float], user_id: str, limit: int = 10) -> list[VectorHit]:
         hits = [
             VectorHit(id=p.id, score=_dot(vector, p.vector), payload=p.payload)
             for p in self._points.values()

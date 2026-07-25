@@ -48,7 +48,11 @@ class AuthService:
         user = await self._users.get_by_email(email)
         # Same error for "no such user" and "wrong password": never reveal
         # which emails have accounts (user enumeration defense).
-        if user is None or not user.is_active or not verify_password(password, user.hashed_password):
+        if (
+            user is None
+            or not user.is_active
+            or not verify_password(password, user.hashed_password)
+        ):
             await self._audit.record("user.login", "failure", context={"email": email})
             raise AuthenticationError("Invalid email or password")
         await self._audit.record("user.login", "success", user_id=user.id)

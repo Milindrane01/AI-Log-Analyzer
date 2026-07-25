@@ -15,9 +15,7 @@ SAMPLE_LOG = """\
 
 
 async def _paste(client: AsyncClient, headers: dict, content: str = SAMPLE_LOG) -> dict:
-    resp = await client.post(
-        "/api/v1/logs/paste", json={"content": content}, headers=headers
-    )
+    resp = await client.post("/api/v1/logs/paste", json={"content": content}, headers=headers)
     assert resp.status_code == 202, resp.text
     return resp.json()
 

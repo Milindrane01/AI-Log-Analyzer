@@ -62,9 +62,7 @@ async def test_access_token_rejected_for_refresh(client: AsyncClient) -> None:
     await _register(client)
     tokens = (await client.post("/api/v1/auth/login", json=CREDS)).json()
 
-    resp = await client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": tokens["access_token"]}
-    )
+    resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": tokens["access_token"]})
     assert resp.status_code == 401
 
 

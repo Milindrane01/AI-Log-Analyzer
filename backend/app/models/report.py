@@ -10,8 +10,11 @@ class IncidentReport(Base, UUIDPrimaryKey, Timestamped):
     __tablename__ = "incident_reports"
 
     analysis_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("analyses.id", ondelete="CASCADE"),
-        unique=True, index=True, nullable=False,
+        String(36),
+        ForeignKey("analyses.id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+        nullable=False,
     )
     user_id: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)

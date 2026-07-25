@@ -6,6 +6,8 @@ and when debugging token spend).
 """
 
 import json
+from collections.abc import AsyncIterator
+from typing import Any
 
 import httpx
 import structlog
@@ -69,8 +71,7 @@ class OpenAIProvider:
         except (KeyError, json.JSONDecodeError, ValueError) as exc:
             raise LLMError(f"Unparseable OpenAI response: {exc}") from exc
 
-
-    async def stream_chat(self, system: str, messages: list[dict]):
+    async def stream_chat(self, system: str, messages: list[dict[str, str]]) -> AsyncIterator[str]:
         """Yield answer tokens from a streaming chat completion (SSE passthrough)."""
         payload = {
             "model": self._settings.openai_model_cheap,
@@ -102,7 +103,7 @@ class OpenAIProvider:
             raise LLMError(f"OpenAI stream failed: {exc}") from exc
 
 
-def _strict_schema() -> dict:
+def _strict_schema() -> dict[str, Any]:
     """InsightResult as OpenAI strict-mode JSON schema (no defaults, all required)."""
     schema = InsightResult.model_json_schema()
     schema["additionalProperties"] = False

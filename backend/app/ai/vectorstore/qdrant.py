@@ -44,16 +44,13 @@ class QdrantVectorStore:
                 f"{self._url}/collections/{COLLECTION}/points",
                 json={
                     "points": [
-                        {"id": p.id, "vector": p.vector, "payload": p.payload}
-                        for p in points
+                        {"id": p.id, "vector": p.vector, "payload": p.payload} for p in points
                     ]
                 },
             )
             resp.raise_for_status()
 
-    async def search(
-        self, vector: list[float], user_id: str, limit: int = 10
-    ) -> list[VectorHit]:
+    async def search(self, vector: list[float], user_id: str, limit: int = 10) -> list[VectorHit]:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             await self._ensure_collection(client)
             resp = await client.post(

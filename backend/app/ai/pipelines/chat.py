@@ -11,6 +11,7 @@ import structlog
 
 from app.ai.embeddings.base import EmbeddingProvider
 from app.ai.prompts.chat import SYSTEM_PROMPT, build_context_block
+from app.ai.providers.base import ChatProvider
 from app.ai.rag.chunking import chunk_lines
 from app.ai.rag.retriever import ScoredChunk, retrieve
 
@@ -31,7 +32,7 @@ class ChatResult:
 
 
 async def stream_chat_answer(
-    provider,  # object with stream_chat(system, messages) -> AsyncIterator[str]
+    provider: ChatProvider,
     embedder: EmbeddingProvider,
     file_path: str,
     history: list[dict[str, str]],  # [{"role","content"}] prior turns

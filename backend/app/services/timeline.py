@@ -34,9 +34,7 @@ async def build_timeline(session: AsyncSession, analysis: Analysis) -> list[Time
 
     groups = list(
         (
-            await session.execute(
-                select(ErrorGroup).where(ErrorGroup.analysis_id == analysis.id)
-            )
+            await session.execute(select(ErrorGroup).where(ErrorGroup.analysis_id == analysis.id))
         ).scalars()
     )
     if not groups:
@@ -46,14 +44,12 @@ async def build_timeline(session: AsyncSession, analysis: Analysis) -> list[Time
         i.group_id: i.payload.get("error_type")
         for i in (
             await session.execute(
-                select(GroupInsight).where(
-                    GroupInsight.group_id.in_([g.id for g in groups])
-                )
+                select(GroupInsight).where(GroupInsight.group_id.in_([g.id for g in groups]))
             )
         ).scalars()
     }
 
-    def sort_key(g: ErrorGroup) -> tuple:
+    def sort_key(g: ErrorGroup) -> tuple[bool, datetime, int, int]:
         # Timestamped groups first (by time); undated groups fall back to
         # severity then count so the ordering is still deterministic.
         return (

@@ -16,7 +16,5 @@ class SentenceTransformerEmbedder:
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
         # encode() is CPU-bound sync work — off the event loop with to_thread.
-        vectors = await asyncio.to_thread(
-            self._model.encode, texts, normalize_embeddings=True
-        )
+        vectors = await asyncio.to_thread(self._model.encode, texts, normalize_embeddings=True)
         return [list(map(float, v)) for v in vectors]

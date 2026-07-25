@@ -7,6 +7,9 @@ import asyncio
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from app.ai.embeddings.base import EmbeddingProvider
+from app.ai.providers.base import LLMProvider
+from app.ai.vectorstore.base import VectorStore
 from app.core.config import get_settings
 from app.workers.celery_app import celery_app
 
@@ -17,12 +20,13 @@ def run_analysis_task(analysis_id: str) -> None:
 
     async def _run() -> None:
         settings = get_settings()
-        provider = None
+        provider: LLMProvider | None = None
         if settings.ai_enabled:
             from app.ai.providers.openai import OpenAIProvider
 
             provider = OpenAIProvider(settings)
-        embedder = vector_store = None
+        embedder: EmbeddingProvider | None = None
+        vector_store: VectorStore | None = None
         if settings.qdrant_url:
             if settings.embedding_backend == "sentence-transformers":
                 from app.ai.embeddings.sentence_transformer import SentenceTransformerEmbedder
