@@ -1,0 +1,6 @@
+# Loaded automatically by `docker compose`. POC convenience:
+# serve the frontend on host port 80 (the base compose maps it to 3000).
+services:
+  frontend:
+    ports:
+      - "80:80"

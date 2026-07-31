@@ -1,0 +1,62 @@
+# POC deploy: on push to main, copy the repo to EC2 and (re)start Docker Compose.
+# Requires GitHub secrets: EC2_HOST, EC2_USERNAME, EC2_SSH_KEY, OPENAI_API_KEY, JWT_SECRET.
+# (EC2_HOST comes from the Terraform output `public_ip`.)
+name: Deploy to EC2 (POC)
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+
+concurrency:
+  group: poc-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy project to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "."
+          target: "/home/ubuntu/ai-log-analyzer"
+          rm: false
+
+      - name: Build .env and (re)deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/ai-log-analyzer
+
+            # Write backend/.env from GitHub secrets (never committed)
+            cat > backend/.env <<EOF
+            APP_ENVIRONMENT=production
+            APP_LOG_JSON=true
+            APP_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            APP_JWT_SECRET_KEY=${{ secrets.JWT_SECRET }}
+            APP_DATABASE_URL=postgresql+asyncpg://loganalyzer:poc-db-password@postgres:5432/loganalyzer
+            APP_REDIS_URL=redis://redis:6379/0
+            APP_QDRANT_URL=http://qdrant:6333
+            APP_UPLOAD_DIR=/srv/uploads
+            APP_EMBEDDING_BACKEND=hashing
+            POSTGRES_USER=loganalyzer
+            POSTGRES_PASSWORD=poc-db-password
+            POSTGRES_DB=loganalyzer
+            GRAFANA_PASSWORD=admin
+            EOF
+
+            docker compose pull || true
+            docker compose up -d --build
+            # apply DB migrations
+            docker compose exec -T api alembic upgrade head
+            docker compose ps

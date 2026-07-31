@@ -30,6 +30,10 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
 COPY app ./app
+# Bundle Alembic so migrations run inside the container (docker compose exec api
+# alembic upgrade head) without copying files in by hand on the target host.
+COPY alembic.ini ./alembic.ini
+COPY alembic ./alembic
 
 USER appuser
 EXPOSE 8000
